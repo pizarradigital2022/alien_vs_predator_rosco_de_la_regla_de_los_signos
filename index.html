@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -168,6 +168,7 @@
       font-size: 1.5em;
       margin-bottom: 15px;
       min-height: 40px;
+      line-height: 1.5;
     }
     #answer-input {
       padding: 10px;
@@ -533,7 +534,8 @@
       let activeNode = document.getElementById(`node-${activePlayerKey}-${currentNum}`);
       if (activeNode) activeNode.classList.add('active-letter');
 
-      document.getElementById("current-question").innerText = `Pregunta ${currentNum}ª:   ${pData.questions[currentNum - 1].text}`;
+      // Línea modificada con .innerHTML, salto de línea <br> y la operación dentro de <strong>
+      document.getElementById("current-question").innerHTML = `Pregunta ${currentNum}ª:<br><strong>${pData.questions[currentNum - 1].text}</strong>`;
       document.getElementById("answer-input").value = "";
       document.getElementById("answer-input").focus();
     }
