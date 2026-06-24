@@ -43,6 +43,27 @@
       min-width: 250px;
       box-sizing: border-box;
     }
+    .instructions-box {
+      background: #1f4068;
+      border-left: 5px solid #e94560;
+      padding: 15px 20px;
+      margin: 20px auto;
+      max-width: 80%;
+      border-radius: 0 10px 10px 0;
+      text-align: left;
+    }
+    .instructions-box h3 {
+      margin-top: 0;
+      color: #e94560;
+    }
+    .instructions-box ul {
+      margin: 5px 0;
+      padding-left: 20px;
+    }
+    .instructions-box li {
+      margin-bottom: 8px;
+      line-height: 1.4;
+    }
     input[type="text"], select {
       width: 80%;
       padding: 10px;
@@ -115,11 +136,23 @@
       to { transform: scale(1.1); }
     }
 
-    #timer {
+    .timer-display {
+      font-size: 1.8em;
+      font-weight: bold;
+      color: #e94560;
+      margin: 10px 0;
+      background: #1a1a2e;
+      display: inline-block;
+      padding: 5px 15px;
+      border-radius: 8px;
+    }
+    #global-timer-container {
+      margin-bottom: 15px;
+    }
+    #global-timer {
       font-size: 2.5em;
       font-weight: bold;
       color: #e94560;
-      margin: 15px 0;
       background: #1a1a2e;
       display: inline-block;
       padding: 5px 20px;
@@ -170,19 +203,6 @@
       font-weight: bold;
       margin-top: 10px;
     }
-    /* Imágenes de marcador de posición */
-    .placeholder-img {
-      width: 200px;
-      height: 15px;
-      background: #333;
-      margin: 15px auto;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 5px;
-      font-size: 0.8em;
-      color: #aaa;
-    }
     .screen-img {
       width: 150px;
       height: 150px;
@@ -219,6 +239,16 @@
     <h2>Configuración de la Partida</h2>
     <img class="screen-img" src="./imagen_inicial.png" alt="[Imagen Inicio: Alien vs Predator]">
     
+    <div class="instructions-box">
+      <h3>Instrucciones de Juego</h3>
+      <ul>
+        <li><strong>El Objetivo:</strong> Responder correctamente a las 20 preguntas numéricas de tu rosco (multiplicaciones y divisiones enteras aplicando la regla de los signos).</li>
+        <li><strong>Mecánica de Turnos:</strong> El jugador activo continúa respondiendo mientras acierte. Si falla o presiona <strong>"Pasapalabra"</strong>, el turno pasará al rival. Puedes usar la tecla <em>Enter</em> para enviar tus respuestas.</li>
+        <li><strong>Modo Tiempo Compartido:</strong> El tiempo es global para ambos. El juego termina cuando se agota este reloj o ambos roscos se completan.</li>
+        <li><strong>Modo Tiempo Individual:</strong> Cada equipo tiene su propio cronómetro que solo descuenta en su turno. Si a un equipo se le agota el tiempo, el otro puede seguir jugando en solitario hasta que termine su rosco o consuma sus segundos. ¡Un rosco perfecto con 20 éxitos otorga la victoria instantánea!</li>
+      </ul>
+    </div>
+
     <div class="setup-container">
       <div class="player-setup">
         <h3>Jugador 1</h3>
@@ -230,25 +260,43 @@
       </div>
     </div>
 
-    <div style="margin: 20px 0;">
-      <label for="game-duration" style="font-size: 1.2em; font-weight: bold;">Tiempo de juego:</label>
-      <select id="game-duration">
-        <option value="5">5 Minutos</option>
-        <option value="10">10 Minutos</option>
-        <option value="15">15 Minutos</option>
-      </select>
+    <div style="margin: 20px 0; display: flex; justify-content: center; gap: 30px; flex-wrap: wrap;">
+      <div>
+        <label for="game-mode" style="font-size: 1.2em; font-weight: bold; display: block; margin-bottom: 5px;">Modalidad de Tiempo:</label>
+        <select id="game-mode">
+          <option value="shared">Tiempo Compartido (Global)</option>
+          <option value="individual">Tiempo Individual (Por Equipo)</option>
+        </select>
+      </div>
+      <div>
+        <label for="game-duration" style="font-size: 1.2em; font-weight: bold; display: block; margin-bottom: 5px;">Duración:</label>
+        <select id="game-duration">
+          <option value="5">5 Minutos</option>
+          <option value="10">10 Minutos</option>
+          <option value="15">15 Minutos</option>
+        </select>
+      </div>
     </div>
 
     <button class="btn-main" style="font-size: 1.4em; padding: 15px 40px;" onclick="initGame()">Comenzar Batalla</button>
+
+    <hr>
+    <p>Autor: Joaquín Candañedo.<br><a href="https://creativecommons.org/licenses/by-sa/4.0/"><img src="./resources/CC_BY_SA.png" alt="Creative Commons Reconocimiento - Compartir Igual"></a></p>  
+
   </div>
 
 
   <div id="screen-game" class="screen">
-    <div id="timer">05:00</div>
+    <div id="global-timer-container">
+      <div id="global-timer">05:00</div>
+    </div>
 
     <div class="game-layout">
       <div id="area-p1" class="player-area">
         <h3 id="display-name-p1">Jugador 1</h3>
+        <div id="timer-p1-container" style="display: none;">
+          <div id="timer-p1" class="timer-display">05:00</div>
+        </div>
         <div id="rosco-p1" class="rosco-container">
           <img class="center-image" src="./imagen_centro_p1.png" alt="Alien">
         </div>
@@ -256,6 +304,9 @@
 
       <div id="area-p2" class="player-area">
         <h3 id="display-name-p2">Jugador 2</h3>
+        <div id="timer-p2-container" style="display: none;">
+          <div id="timer-p2" class="timer-display">05:00</div>
+        </div>
         <div id="rosco-p2" class="rosco-container">
           <img class="center-image" src="./imagen_centro_p2.png" alt="Predator">
         </div>
@@ -269,8 +320,8 @@
       <div id="action-zone">
         <input type="text" id="answer-input" autocomplete="off" placeholder="Resultado">
         <div style="margin-top: 15px;">
-          <button class="btn-action" onclick="processAnswer()">Responder</button>
-          <button class="btn-pass" onclick="triggerPasapalabra()">Pasapalabra</button>
+          <button class="btn-action" id="btn-submit" onclick="processAnswer()">Responder</button>
+          <button class="btn-pass" id="btn-pass" onclick="triggerPasapalabra()">Pasapalabra</button>
         </div>
       </div>
       <div id="feedback"></div>
@@ -314,18 +365,17 @@
   </div>
 
   <script>
-    // Configuración general del juego
     const TOTAL_QUESTIONS = 20;
     let players = {
-      p1: { name: "", score: { correct: 0, wrong: 0 }, pending: [], questions: [], currentIdx: 0, finished: false },
-      p2: { name: "", score: { correct: 0, wrong: 0 }, pending: [], questions: [], currentIdx: 0, finished: false }
+      p1: { name: "", score: { correct: 0, wrong: 0 }, pending: [], questions: [], currentIdx: 0, finished: false, timeLeft: 300, outOfTime: false },
+      p2: { name: "", score: { correct: 0, wrong: 0 }, pending: [], questions: [], currentIdx: 0, finished: false, timeLeft: 300, outOfTime: false }
     };
     
-    let activePlayerKey = 'p1'; // Empieza el Jugador 1
+    let activePlayerKey = 'p1';
     let gameTimer = null;
-    let timeLeft = 300;
+    let globalTimeLeft = 300;
+    let currentMode = 'shared';
 
-    // Al cargar la ventana, permitir presionar Enter para responder
     window.onload = () => {
       document.getElementById("answer-input").addEventListener("keypress", function(event) {
         if (event.key === "Enter") {
@@ -334,91 +384,88 @@
       });
     };
 
-    // Generador de operaciones aleatorias (máx 2 cifras por número involucrado, resultados enteros)
     function generateMathQuestion() {
       const types = ['mul', 'div'];
       const type = types[Math.floor(Math.random() * types.length)];
-      
-      // Signos aleatorios (-1 o 1)
       const sign1 = Math.random() < 0.5 ? -1 : 1;
       const sign2 = Math.random() < 0.5 ? -1 : 1;
-      
       let num1, num2, questionText, answer;
 
       if (type === 'mul') {
-        // Multiplicación: números entre 2 y 15 (para no exceder drásticamente en el producto las 2 cifras legibles)
         num1 = (Math.floor(Math.random() * 14) + 2) * sign1;
         num2 = (Math.floor(Math.random() * 9) + 2) * sign2;
         answer = num1 * num2;
-        // Formatear texto con paréntesis si es negativo
         let str1 = num1 < 0 ? `(${num1})` : `${num1}`;
         let str2 = num2 < 0 ? `(${num2})` : `${num2}`;
         questionText = `${str1} · ${str2} = ?`;
       } else {
-        // División: garantizamos resultado entero usando el producto inverso
         let exactResult = (Math.floor(Math.random() * 12) + 2) * sign1; 
         num2 = (Math.floor(Math.random() * 12) + 2) * sign2;
-        num1 = exactResult * num2; // num1 puede tener hasta 3 cifras pero los involucrados originales cumplen el criterio de dificultad
+        num1 = exactResult * num2;
         answer = exactResult;
-        
         let str1 = num1 < 0 ? `(${num1})` : `${num1}`;
         let str2 = num2 < 0 ? `(${num2})` : `${num2}`;
         questionText = `${str1} : ${str2} = ?`;
       }
-
       return { text: questionText, answer: answer };
     }
 
-    // Cambiar de pantalla de manera limpia
     function changeScreen(screenId) {
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active-screen'));
       document.getElementById(screenId).classList.add('active-screen');
     }
 
-    // Inicialización del juego y renderizado de roscos
     function initGame() {
-      // Captura de datos de configuración
       players.p1.name = document.getElementById("p1-name").value.trim() || "Equipo Alien";
       players.p2.name = document.getElementById("p2-name").value.trim() || "Equipo Predator";
       
-      timeLeft = parseInt(document.getElementById("game-duration").value) * 60;
+      currentMode = document.getElementById("game-mode").value;
+      let selectedSeconds = parseInt(document.getElementById("game-duration").value) * 60;
       
-      // Resetear estados internos
+      globalTimeLeft = selectedSeconds;
+      
       ['p1', 'p2'].forEach(pKey => {
         players[pKey].score = { correct: 0, wrong: 0 };
-        players[pKey].pending = Array.from({length: TOTAL_QUESTIONS}, (_, i) => i + 1); // [1, 2, ..., 20]
+        players[pKey].pending = Array.from({length: TOTAL_QUESTIONS}, (_, i) => i + 1);
         players[pKey].currentIdx = 0;
         players[pKey].finished = false;
+        players[pKey].outOfTime = false;
+        players[pKey].timeLeft = selectedSeconds;
         players[pKey].questions = [];
         
-        // Generar 20 preguntas únicas por jugador
         for(let i=0; i < TOTAL_QUESTIONS; i++) {
           players[pKey].questions.push(generateMathQuestion());
         }
       });
 
-      // Actualizar textos en pantalla de juego
       document.getElementById("display-name-p1").innerText = players.p1.name;
       document.getElementById("display-name-p2").innerText = players.p2.name;
 
-      // Construcción visual estática de los roscos
+      if (currentMode === 'shared') {
+        document.getElementById("global-timer-container").style.display = "block";
+        document.getElementById("timer-p1-container").style.display = "none";
+        document.getElementById("timer-p2-container").style.display = "none";
+      } else {
+        document.getElementById("global-timer-container").style.display = "none";
+        document.getElementById("timer-p1-container").style.display = "block";
+        document.getElementById("timer-p2-container").style.display = "block";
+      }
+
       renderRoscoCircle('rosco-p1', 'p1');
       renderRoscoCircle('rosco-p2', 'p2');
 
-      // Empezar juego
       activePlayerKey = 'p1';
-      updateTimerDisplay();
+      updateAllTimersDisplay();
+      
       clearInterval(gameTimer);
-      gameTimer = setInterval(countdown, 1000);
+      gameTimer = setInterval(countdownEngine, 1000);
       
       changeScreen('screen-game');
       refreshTurn();
     }
 
-    // Dibuja los nodos circulares numéricos (1ª a 20ª)
     function renderRoscoCircle(containerId, playerKey) {
       const container = document.getElementById(containerId);
-      // Eliminar elementos numéricos previos si los hubiera conservando la imagen central
       const centerImgStr = container.querySelector('.center-image').outerHTML;
       container.innerHTML = centerImgStr;
 
@@ -441,94 +488,110 @@
       }
     }
 
-    // Gestión de turnos y sincronización visual
+    function checkGameEndConditions() {
+      if (players.p1.finished && players.p2.finished) {
+        return true;
+      }
+
+      if (currentMode === 'shared') {
+        if (globalTimeLeft <= 0) return true;
+      } else {
+        if (players.p1.score.correct === TOTAL_QUESTIONS || players.p2.score.correct === TOTAL_QUESTIONS) {
+          return true;
+        }
+        if (players.p1.outOfTime && players.p2.outOfTime) {
+          return true;
+        }
+        if (players.p1.outOfTime && players.p2.finished) return true;
+        if (players.p2.outOfTime && players.p1.finished) return true;
+      }
+      return false;
+    }
+
     function refreshTurn() {
-      // Remover estilos activos de todos los roscos
       document.querySelectorAll('.letter').forEach(l => l.classList.remove('active-letter'));
       document.getElementById('area-p1').classList.remove('active-turn');
       document.getElementById('area-p2').classList.remove('active-turn');
       document.getElementById("feedback").innerText = "";
 
-      // Comprobar si ambos terminaron sus preguntas
-      if (players.p1.finished && players.p2.finished) {
+      if (checkGameEndConditions()) {
         endGame();
         return;
       }
 
-      // Si el jugador actual terminó, pasar automáticamente al otro permanentemente
-      if (players[activePlayerKey].finished) {
-        switchTurn();
+      let pData = players[activePlayerKey];
+
+      if (pData.finished || (currentMode === 'individual' && pData.outOfTime)) {
+        forceSwitchTurn();
         return;
       }
 
-      // Resaltar área del jugador activo
       document.getElementById(`area-${activePlayerKey}`).classList.add('active-turn');
-      document.getElementById("turn-indicator").innerText = `Turno de: ${players[activePlayerKey].name}`;
+      document.getElementById("turn-indicator").innerText = `Turno de: ${pData.name}`;
 
-      // Cargar la pregunta actual
-      let pData = players[activePlayerKey];
       let currentNum = pData.pending[pData.currentIdx];
-      
-      // Encender el nodo en el rosco físico
       let activeNode = document.getElementById(`node-${activePlayerKey}-${currentNum}`);
       if (activeNode) activeNode.classList.add('active-letter');
 
-      // Presentar la operación matemática
       document.getElementById("current-question").innerText = `Pregunta ${currentNum}ª:   ${pData.questions[currentNum - 1].text}`;
       document.getElementById("answer-input").value = "";
       document.getElementById("answer-input").focus();
     }
 
-    function switchTurn() {
+    function forceSwitchTurn() {
       activePlayerKey = (activePlayerKey === 'p1') ? 'p2' : 'p1';
+      let pData = players[activePlayerKey];
+      if (pData.finished || (currentMode === 'individual' && pData.outOfTime)) {
+        if (checkGameEndConditions() || 
+           (players.p1.finished || players.p1.outOfTime) && (players.p2.finished || players.p2.outOfTime)) {
+          endGame();
+          return;
+        }
+      }
       refreshTurn();
     }
 
-    // Lógica al pulsar Pasapalabra o fallar
     function triggerPasapalabra() {
       let pData = players[activePlayerKey];
       if (pData.pending.length > 1) {
         pData.currentIdx = (pData.currentIdx + 1) % pData.pending.length;
       }
-      switchTurn();
+      
+      let opponentKey = (activePlayerKey === 'p1') ? 'p2' : 'p1';
+      let oppData = players[opponentKey];
+      if (!oppData.finished && !(currentMode === 'individual' && oppData.outOfTime)) {
+        activePlayerKey = opponentKey;
+      }
+      refreshTurn();
     }
 
-    // Procesamiento de respuestas escritas
     function processAnswer() {
       let pData = players[activePlayerKey];
-      if (pData.pending.length === 0 || pData.finished) return;
+      if (pData.pending.length === 0 || pData.finished || (currentMode === 'individual' && pData.outOfTime)) return;
 
       let currentNum = pData.pending[pData.currentIdx];
       let inputVal = document.getElementById("answer-input").value.trim();
       
-      if (inputVal === "") return; // Evitar disparos vacíos accidentales
+      if (inputVal === "") return;
 
       let numericAnswer = parseInt(inputVal);
       let correctAnswer = pData.questions[currentNum - 1].answer;
       let targetNode = document.getElementById(`node-${activePlayerKey}-${currentNum}`);
 
       if (!isNaN(numericAnswer) && numericAnswer === correctAnswer) {
-        // ¡ACIERTO!
         targetNode.className = "letter correct-letter";
         pData.score.correct++;
-        
-        // Quitar de la lista de pendientes
         pData.pending.splice(pData.currentIdx, 1);
         
-        // Verificar si completó el rosco entero
         if (pData.pending.length === 0) {
           pData.finished = true;
         } else if (pData.currentIdx >= pData.pending.length) {
-          pData.currentIdx = 0; // Ajuste de desbordamiento de índice
+          pData.currentIdx = 0;
         }
-        
-        // Sigue jugando el mismo jugador al acertar
         refreshTurn();
       } else {
-        // ¡FALLO! (Pasa turno automáticamente)
         targetNode.className = "letter wrong-letter";
         pData.score.wrong++;
-        
         document.getElementById("feedback").innerText = `Incorrecto. Era: ${correctAnswer}`;
         
         pData.pending.splice(pData.currentIdx, 1);
@@ -538,37 +601,67 @@
           pData.currentIdx = 0;
         }
 
-        // Retardo breve para que vean la solución antes de cambiar de pantalla/turno
         document.getElementById("answer-input").disabled = true;
+        document.getElementById("btn-submit").disabled = true;
+        document.getElementById("btn-pass").disabled = true;
+
         setTimeout(() => {
           document.getElementById("answer-input").disabled = false;
-          switchTurn();
+          document.getElementById("btn-submit").disabled = false;
+          document.getElementById("btn-pass").disabled = false;
+          
+          let opponentKey = (activePlayerKey === 'p1') ? 'p2' : 'p1';
+          let oppData = players[opponentKey];
+          if (!oppData.finished && !(currentMode === 'individual' && oppData.outOfTime)) {
+            activePlayerKey = opponentKey;
+          }
+          refreshTurn();
         }, 1500);
       }
     }
 
-    // Temporizador
-    function countdown() {
-      timeLeft--;
-      updateTimerDisplay();
-      if (timeLeft <= 0) {
-        clearInterval(gameTimer);
-        endGame();
+    function countdownEngine() {
+      if (currentMode === 'shared') {
+        globalTimeLeft--;
+        updateAllTimersDisplay();
+        if (globalTimeLeft <= 0) {
+          clearInterval(gameTimer);
+          endGame();
+        }
+      } else {
+        let pData = players[activePlayerKey];
+        if (!pData.finished && !pData.outOfTime) {
+          pData.timeLeft--;
+          updateAllTimersDisplay();
+          
+          if (pData.timeLeft <= 0) {
+            pData.outOfTime = true;
+            forceSwitchTurn();
+          }
+        }
       }
     }
 
-    function updateTimerDisplay() {
-      let minutes = Math.floor(timeLeft / 60).toString().padStart(2, '0');
-      let seconds = (timeLeft % 60).toString().padStart(2, '0');
-      document.getElementById("timer").innerText = `${minutes}:${seconds}`;
+    function updateAllTimersDisplay() {
+      if (currentMode === 'shared') {
+        let min = Math.floor(globalTimeLeft / 60).toString().padStart(2, '0');
+        let sec = (globalTimeLeft % 60).toString().padStart(2, '0');
+        document.getElementById("global-timer").innerText = `${min}:${sec}`;
+      } else {
+        ['p1', 'p2'].forEach(pKey => {
+          let t = players[pKey].timeLeft;
+          if (t < 0) t = 0;
+          let min = Math.floor(t / 60).toString().padStart(2, '0');
+          let sec = (t % 60).toString().padStart(2, '0');
+          document.getElementById(`timer-${pKey}`).innerText = `${min}:${sec}`;
+        });
+      }
     }
 
-    // Finalización del juego y cálculo estadístico
     function endGame() {
       clearInterval(gameTimer);
       changeScreen('screen-results');
 
-      // Rellenar datos en la tabla estadística
       document.getElementById("res-name-p1").innerText = players.p1.name;
       document.getElementById("res-ok-p1").innerText = players.p1.score.correct;
       document.getElementById("res-ko-p1").innerText = players.p1.score.wrong;
@@ -579,26 +672,30 @@
       document.getElementById("res-ko-p2").innerText = players.p2.score.wrong;
       document.getElementById("res-pen-p2").innerText = players.p2.pending.length;
 
-      // Determinar Ganador
       let winnerText = "";
-      if (players.p1.score.correct > players.p2.score.correct) {
-        winnerText = `🏆 ¡Victoria para ${players.p1.name}! 🏆`;
-      } else if (players.p2.score.correct > players.p1.score.correct) {
-        winnerText = `🏆 ¡Victoria para ${players.p2.name}! 🏆`;
+      
+      if (currentMode === 'individual' && players.p1.score.correct === TOTAL_QUESTIONS && players.p2.score.correct !== TOTAL_QUESTIONS) {
+        winnerText = `🏆 ¡Victoria Absoluta para ${players.p1.name} por completar el Rosco Perfecto! 🏆`;
+      } else if (currentMode === 'individual' && players.p2.score.correct === TOTAL_QUESTIONS && players.p1.score.correct !== TOTAL_QUESTIONS) {
+        winnerText = `🏆 ¡Victoria Absoluta para ${players.p2.name} por completar el Rosco Perfecto! 🏆`;
       } else {
-        // Desempate por menos errores si empatan en aciertos
-        if (players.p1.score.wrong < players.p2.score.wrong) {
-          winnerText = `🏆 ¡Victoria para ${players.p1.name} (por menos errores)! 🏆`;
-        } else if (players.p2.score.wrong < players.p1.score.wrong) {
-          winnerText = `🏆 ¡Victoria para ${players.p2.name} (por menos errores)! 🏆`;
+        if (players.p1.score.correct > players.p2.score.correct) {
+          winnerText = `🏆 ¡Victoria para ${players.p1.name}! 🏆`;
+        } else if (players.p2.score.correct > players.p1.score.correct) {
+          winnerText = `🏆 ¡Victoria para ${players.p2.name}! 🏆`;
         } else {
-          winnerText = "¡Empate técnico absoluto! 🤝";
+          if (players.p1.score.wrong < players.p2.score.wrong) {
+            winnerText = `🏆 ¡Victoria para ${players.p1.name} (por menos errores)! 🏆`;
+          } else if (players.p2.score.wrong < players.p1.score.wrong) {
+            winnerText = `🏆 ¡Victoria para ${players.p2.name} (por menos errores)! 🏆`;
+          } else {
+            winnerText = "¡Empate técnico absoluto! 🤝";
+          }
         }
       }
       document.getElementById("winner-announcement").innerText = winnerText;
     }
 
-    // Resetear a pantalla inicial
     function restartToSetup() {
       changeScreen('screen-setup');
     }
