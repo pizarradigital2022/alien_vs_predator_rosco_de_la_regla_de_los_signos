@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Alien vs. Predator: Rosco de la Regla de los Signos</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background-color: #1a1a2e;
+      color: #ffffff;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 {
+      color: #e94560;
+      margin-bottom: 10px;
+    }
+    .screen {
+      display: none;
+      max-width: 1200px;
+      margin: 0 auto;
+      background: #162447;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+    }
+    .active-screen {
+      display: block;
+    }
+    /* Pantalla Inicial */
+    .setup-container {
+      display: flex;
+      justify-content: space-around;
+      flex-wrap: wrap;
+      margin: 20px 0;
+    }
+    .player-setup {
+      background: #1f4068;
+      padding: 20px;
+      border-radius: 10px;
+      width: 40%;
+      min-width: 250px;
+      box-sizing: border-box;
+    }
+    input[type="text"], select {
+      width: 80%;
+      padding: 10px;
+      font-size: 1.1em;
+      border: 2px solid #e94560;
+      border-radius: 5px;
+      background: #1a1a2e;
+      color: #fff;
+      outline: none;
+      margin-top: 10px;
+    }
+    /* Pantalla de Juego */
+    .game-layout {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .player-area {
+      width: 45%;
+      min-width: 450px;
+      padding: 15px;
+      border-radius: 10px;
+      transition: background 0.3s;
+    }
+    .active-turn {
+      background: rgba(233, 69, 96, 0.2);
+      border: 2px solid #e94560;
+    }
+    .rosco-container {
+      position: relative;
+      width: 440px;
+      height: 440px;
+      margin: 15px auto;
+    }
+    .letter {
+      width: 40px;
+      height: 40px;
+      background-color: #0f3460;
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: absolute;
+      font-weight: bold;
+      font-size: 0.85em;
+      transition: background-color 0.3s;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.4);
+    }
+    .center-image {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      border: 3px solid #e94560;
+      background: #1a1a2e;
+    }
+    /* Estados de las preguntas */
+    .waiting-letter { background-color: #0f3460; }
+    .active-letter { background-color: #f39c12 !important; color: black; animation: pulse 1s infinite alternate; }
+    .correct-letter { background-color: #27ae60 !important; }
+    .wrong-letter { background-color: #c0392b !important; }
+
+    @keyframes pulse {
+      from { transform: scale(1); }
+      to { transform: scale(1.1); }
+    }
+
+    #timer {
+      font-size: 2.5em;
+      font-weight: bold;
+      color: #e94560;
+      margin: 15px 0;
+      background: #1a1a2e;
+      display: inline-block;
+      padding: 5px 20px;
+      border-radius: 10px;
+    }
+    .control-panel {
+      margin-top: 20px;
+      background: #1f4068;
+      padding: 20px;
+      border-radius: 10px;
+    }
+    #current-question {
+      font-size: 1.5em;
+      margin-bottom: 15px;
+      min-height: 40px;
+    }
+    #answer-input {
+      padding: 10px;
+      font-size: 1.3em;
+      width: 200px;
+      text-align: center;
+      border-radius: 5px;
+      border: none;
+      outline: none;
+    }
+    /* Botones */
+    button {
+      padding: 12px 25px;
+      font-size: 1.1em;
+      font-weight: bold;
+      cursor: pointer;
+      border: none;
+      border-radius: 5px;
+      transition: background 0.2s, transform 0.1s;
+      margin: 5px;
+    }
+    button:active { transform: scale(0.98); }
+    .btn-main { background-color: #e94560; color: white; }
+    .btn-main:hover { background-color: #ff5e7e; }
+    .btn-pass { background-color: #f39c12; color: white; }
+    .btn-pass:hover { background-color: #f1c40f; }
+    .btn-action { background-color: #27ae60; color: white; }
+    .btn-action:hover { background-color: #2ecc71; }
+
+    #feedback {
+      height: 25px;
+      font-size: 1.2em;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+    /* Imágenes de marcador de posición */
+    .placeholder-img {
+      width: 200px;
+      height: 15px;
+      background: #333;
+      margin: 15px auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 5px;
+      font-size: 0.8em;
+      color: #aaa;
+    }
+    .screen-img {
+      width: 150px;
+      height: 150px;
+      object-fit: cover;
+      border-radius: 10px;
+      margin: 15px auto;
+      border: 2px solid #e94560;
+    }
+    /* Pantalla de Resultados */
+    .results-table {
+      width: 80%;
+      margin: 20px auto;
+      border-collapse: collapse;
+    }
+    .results-table th, .results-table td {
+      border: 1px solid #e94560;
+      padding: 12px;
+      font-size: 1.2em;
+    }
+    .results-table th { background-color: #1f4068; }
+    #winner-announcement {
+      font-size: 2em;
+      color: #27ae60;
+      margin: 20px 0;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Alien vs. Predator: Rosco de la Regla de los Signos</h1>
+
+  <div id="screen-setup" class="screen active-screen">
+    <h2>Configuración de la Partida</h2>
+    <img class="screen-img" src="./imagen_inicial.png" alt="[Imagen Inicio: Alien vs Predator]">
+    
+    <div class="setup-container">
+      <div class="player-setup">
+        <h3>Jugador 1</h3>
+        <input type="text" id="p1-name" value="Equipo Alien">
+      </div>
+      <div class="player-setup">
+        <h3>Jugador 2</h3>
+        <input type="text" id="p2-name" value="Equipo Predator">
+      </div>
+    </div>
+
+    <div style="margin: 20px 0;">
+      <label for="game-duration" style="font-size: 1.2em; font-weight: bold;">Tiempo de juego:</label>
+      <select id="game-duration">
+        <option value="5">5 Minutos</option>
+        <option value="10">10 Minutos</option>
+        <option value="15">15 Minutos</option>
+      </select>
+    </div>
+
+    <button class="btn-main" style="font-size: 1.4em; padding: 15px 40px;" onclick="initGame()">Comenzar Batalla</button>
+  </div>
+
+
+  <div id="screen-game" class="screen">
+    <div id="timer">05:00</div>
+
+    <div class="game-layout">
+      <div id="area-p1" class="player-area">
+        <h3 id="display-name-p1">Jugador 1</h3>
+        <div id="rosco-p1" class="rosco-container">
+          <img class="center-image" src="./imagen_centro_p1.png" alt="Alien">
+        </div>
+      </div>
+
+      <div id="area-p2" class="player-area">
+        <h3 id="display-name-p2">Jugador 2</h3>
+        <div id="rosco-p2" class="rosco-container">
+          <img class="center-image" src="./imagen_centro_p2.png" alt="Predator">
+        </div>
+      </div>
+    </div>
+
+    <div class="control-panel">
+      <h2 id="turn-indicator" style="color: #f39c12;">Turno de: ...</h2>
+      <div id="current-question">Pregunta aparecerá aquí</div>
+      
+      <div id="action-zone">
+        <input type="text" id="answer-input" autocomplete="off" placeholder="Resultado">
+        <div style="margin-top: 15px;">
+          <button class="btn-action" onclick="processAnswer()">Responder</button>
+          <button class="btn-pass" onclick="triggerPasapalabra()">Pasapalabra</button>
+        </div>
+      </div>
+      <div id="feedback"></div>
+    </div>
+  </div>
+
+
+  <div id="screen-results" class="screen">
+    <h2>Fin de la Partida</h2>
+    <img class="screen-img" src="./imagen_final.png" alt="[Imagen Final]">
+    
+    <div id="winner-announcement">¡Ganador!</div>
+
+    <h3>Estadísticas Finales</h3>
+    <table class="results-table">
+      <thead>
+        <tr>
+          <th>Equipo / Concursante</th>
+          <th>Aciertos 👍</th>
+          <th>Errores 👎</th>
+          <th>Pendientes ⏳</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td id="res-name-p1">Jugador 1</td>
+          <td id="res-ok-p1" style="color: #27ae60;">0</td>
+          <td id="res-ko-p1" style="color: #c0392b;">0</td>
+          <td id="res-pen-p1" style="color: #f39c12;">0</td>
+        </tr>
+        <tr>
+          <td id="res-name-p2">Jugador 2</td>
+          <td id="res-ok-p2" style="color: #27ae60;">0</td>
+          <td id="res-ko-p2" style="color: #c0392b;">0</td>
+          <td id="res-pen-p2" style="color: #f39c12;">0</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <button class="btn-main" style="margin-top: 20px; font-size: 1.2em;" onclick="restartToSetup()">Volver a Jugar</button>
+  </div>
+
+  <script>
+    // Configuración general del juego
+    const TOTAL_QUESTIONS = 20;
+    let players = {
+      p1: { name: "", score: { correct: 0, wrong: 0 }, pending: [], questions: [], currentIdx: 0, finished: false },
+      p2: { name: "", score: { correct: 0, wrong: 0 }, pending: [], questions: [], currentIdx: 0, finished: false }
+    };
+    
+    let activePlayerKey = 'p1'; // Empieza el Jugador 1
+    let gameTimer = null;
+    let timeLeft = 300;
+
+    // Al cargar la ventana, permitir presionar Enter para responder
+    window.onload = () => {
+      document.getElementById("answer-input").addEventListener("keypress", function(event) {
+        if (event.key === "Enter") {
+          processAnswer();
+        }
+      });
+    };
+
+    // Generador de operaciones aleatorias (máx 2 cifras por número involucrado, resultados enteros)
+    function generateMathQuestion() {
+      const types = ['mul', 'div'];
+      const type = types[Math.floor(Math.random() * types.length)];
+      
+      // Signos aleatorios (-1 o 1)
+      const sign1 = Math.random() < 0.5 ? -1 : 1;
+      const sign2 = Math.random() < 0.5 ? -1 : 1;
+      
+      let num1, num2, questionText, answer;
+
+      if (type === 'mul') {
+        // Multiplicación: números entre 2 y 15 (para no exceder drásticamente en el producto las 2 cifras legibles)
+        num1 = (Math.floor(Math.random() * 14) + 2) * sign1;
+        num2 = (Math.floor(Math.random() * 9) + 2) * sign2;
+        answer = num1 * num2;
+        // Formatear texto con paréntesis si es negativo
+        let str1 = num1 < 0 ? `(${num1})` : `${num1}`;
+        let str2 = num2 < 0 ? `(${num2})` : `${num2}`;
+        questionText = `${str1} · ${str2} = ?`;
+      } else {
+        // División: garantizamos resultado entero usando el producto inverso
+        let exactResult = (Math.floor(Math.random() * 12) + 2) * sign1; 
+        num2 = (Math.floor(Math.random() * 12) + 2) * sign2;
+        num1 = exactResult * num2; // num1 puede tener hasta 3 cifras pero los involucrados originales cumplen el criterio de dificultad
+        answer = exactResult;
+        
+        let str1 = num1 < 0 ? `(${num1})` : `${num1}`;
+        let str2 = num2 < 0 ? `(${num2})` : `${num2}`;
+        questionText = `${str1} : ${str2} = ?`;
+      }
+
+      return { text: questionText, answer: answer };
+    }
+
+    // Cambiar de pantalla de manera limpia
+    function changeScreen(screenId) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active-screen'));
+      document.getElementById(screenId).classList.add('active-screen');
+    }
+
+    // Inicialización del juego y renderizado de roscos
+    function initGame() {
+      // Captura de datos de configuración
+      players.p1.name = document.getElementById("p1-name").value.trim() || "Equipo Alien";
+      players.p2.name = document.getElementById("p2-name").value.trim() || "Equipo Predator";
+      
+      timeLeft = parseInt(document.getElementById("game-duration").value) * 60;
+      
+      // Resetear estados internos
+      ['p1', 'p2'].forEach(pKey => {
+        players[pKey].score = { correct: 0, wrong: 0 };
+        players[pKey].pending = Array.from({length: TOTAL_QUESTIONS}, (_, i) => i + 1); // [1, 2, ..., 20]
+        players[pKey].currentIdx = 0;
+        players[pKey].finished = false;
+        players[pKey].questions = [];
+        
+        // Generar 20 preguntas únicas por jugador
+        for(let i=0; i < TOTAL_QUESTIONS; i++) {
+          players[pKey].questions.push(generateMathQuestion());
+        }
+      });
+
+      // Actualizar textos en pantalla de juego
+      document.getElementById("display-name-p1").innerText = players.p1.name;
+      document.getElementById("display-name-p2").innerText = players.p2.name;
+
+      // Construcción visual estática de los roscos
+      renderRoscoCircle('rosco-p1', 'p1');
+      renderRoscoCircle('rosco-p2', 'p2');
+
+      // Empezar juego
+      activePlayerKey = 'p1';
+      updateTimerDisplay();
+      clearInterval(gameTimer);
+      gameTimer = setInterval(countdown, 1000);
+      
+      changeScreen('screen-game');
+      refreshTurn();
+    }
+
+    // Dibuja los nodos circulares numéricos (1ª a 20ª)
+    function renderRoscoCircle(containerId, playerKey) {
+      const container = document.getElementById(containerId);
+      // Eliminar elementos numéricos previos si los hubiera conservando la imagen central
+      const centerImgStr = container.querySelector('.center-image').outerHTML;
+      container.innerHTML = centerImgStr;
+
+      const radius = 175;
+      const centerX = 220;
+      const centerY = 220;
+
+      for (let i = 0; i < TOTAL_QUESTIONS; i++) {
+        const angle = (2 * Math.PI / TOTAL_QUESTIONS) * i;
+        const x = centerX + radius * Math.sin(angle);
+        const y = centerY - radius * Math.cos(angle);
+        
+        const div = document.createElement("div");
+        div.className = "letter waiting-letter";
+        div.innerText = `${i + 1}ª`;
+        div.style.left = `${x - 20}px`;
+        div.style.top = `${y - 20}px`;
+        div.id = `node-${playerKey}-${i + 1}`;
+        container.appendChild(div);
+      }
+    }
+
+    // Gestión de turnos y sincronización visual
+    function refreshTurn() {
+      // Remover estilos activos de todos los roscos
+      document.querySelectorAll('.letter').forEach(l => l.classList.remove('active-letter'));
+      document.getElementById('area-p1').classList.remove('active-turn');
+      document.getElementById('area-p2').classList.remove('active-turn');
+      document.getElementById("feedback").innerText = "";
+
+      // Comprobar si ambos terminaron sus preguntas
+      if (players.p1.finished && players.p2.finished) {
+        endGame();
+        return;
+      }
+
+      // Si el jugador actual terminó, pasar automáticamente al otro permanentemente
+      if (players[activePlayerKey].finished) {
+        switchTurn();
+        return;
+      }
+
+      // Resaltar área del jugador activo
+      document.getElementById(`area-${activePlayerKey}`).classList.add('active-turn');
+      document.getElementById("turn-indicator").innerText = `Turno de: ${players[activePlayerKey].name}`;
+
+      // Cargar la pregunta actual
+      let pData = players[activePlayerKey];
+      let currentNum = pData.pending[pData.currentIdx];
+      
+      // Encender el nodo en el rosco físico
+      let activeNode = document.getElementById(`node-${activePlayerKey}-${currentNum}`);
+      if (activeNode) activeNode.classList.add('active-letter');
+
+      // Presentar la operación matemática
+      document.getElementById("current-question").innerText = `Pregunta ${currentNum}ª:   ${pData.questions[currentNum - 1].text}`;
+      document.getElementById("answer-input").value = "";
+      document.getElementById("answer-input").focus();
+    }
+
+    function switchTurn() {
+      activePlayerKey = (activePlayerKey === 'p1') ? 'p2' : 'p1';
+      refreshTurn();
+    }
+
+    // Lógica al pulsar Pasapalabra o fallar
+    function triggerPasapalabra() {
+      let pData = players[activePlayerKey];
+      if (pData.pending.length > 1) {
+        pData.currentIdx = (pData.currentIdx + 1) % pData.pending.length;
+      }
+      switchTurn();
+    }
+
+    // Procesamiento de respuestas escritas
+    function processAnswer() {
+      let pData = players[activePlayerKey];
+      if (pData.pending.length === 0 || pData.finished) return;
+
+      let currentNum = pData.pending[pData.currentIdx];
+      let inputVal = document.getElementById("answer-input").value.trim();
+      
+      if (inputVal === "") return; // Evitar disparos vacíos accidentales
+
+      let numericAnswer = parseInt(inputVal);
+      let correctAnswer = pData.questions[currentNum - 1].answer;
+      let targetNode = document.getElementById(`node-${activePlayerKey}-${currentNum}`);
+
+      if (!isNaN(numericAnswer) && numericAnswer === correctAnswer) {
+        // ¡ACIERTO!
+        targetNode.className = "letter correct-letter";
+        pData.score.correct++;
+        
+        // Quitar de la lista de pendientes
+        pData.pending.splice(pData.currentIdx, 1);
+        
+        // Verificar si completó el rosco entero
+        if (pData.pending.length === 0) {
+          pData.finished = true;
+        } else if (pData.currentIdx >= pData.pending.length) {
+          pData.currentIdx = 0; // Ajuste de desbordamiento de índice
+        }
+        
+        // Sigue jugando el mismo jugador al acertar
+        refreshTurn();
+      } else {
+        // ¡FALLO! (Pasa turno automáticamente)
+        targetNode.className = "letter wrong-letter";
+        pData.score.wrong++;
+        
+        document.getElementById("feedback").innerText = `Incorrecto. Era: ${correctAnswer}`;
+        
+        pData.pending.splice(pData.currentIdx, 1);
+        if (pData.pending.length === 0) {
+          pData.finished = true;
+        } else if (pData.currentIdx >= pData.pending.length) {
+          pData.currentIdx = 0;
+        }
+
+        // Retardo breve para que vean la solución antes de cambiar de pantalla/turno
+        document.getElementById("answer-input").disabled = true;
+        setTimeout(() => {
+          document.getElementById("answer-input").disabled = false;
+          switchTurn();
+        }, 1500);
+      }
+    }
+
+    // Temporizador
+    function countdown() {
+      timeLeft--;
+      updateTimerDisplay();
+      if (timeLeft <= 0) {
+        clearInterval(gameTimer);
+        endGame();
+      }
+    }
+
+    function updateTimerDisplay() {
+      let minutes = Math.floor(timeLeft / 60).toString().padStart(2, '0');
+      let seconds = (timeLeft % 60).toString().padStart(2, '0');
+      document.getElementById("timer").innerText = `${minutes}:${seconds}`;
+    }
+
+    // Finalización del juego y cálculo estadístico
+    function endGame() {
+      clearInterval(gameTimer);
+      changeScreen('screen-results');
+
+      // Rellenar datos en la tabla estadística
+      document.getElementById("res-name-p1").innerText = players.p1.name;
+      document.getElementById("res-ok-p1").innerText = players.p1.score.correct;
+      document.getElementById("res-ko-p1").innerText = players.p1.score.wrong;
+      document.getElementById("res-pen-p1").innerText = players.p1.pending.length;
+
+      document.getElementById("res-name-p2").innerText = players.p2.name;
+      document.getElementById("res-ok-p2").innerText = players.p2.score.correct;
+      document.getElementById("res-ko-p2").innerText = players.p2.score.wrong;
+      document.getElementById("res-pen-p2").innerText = players.p2.pending.length;
+
+      // Determinar Ganador
+      let winnerText = "";
+      if (players.p1.score.correct > players.p2.score.correct) {
+        winnerText = `🏆 ¡Victoria para ${players.p1.name}! 🏆`;
+      } else if (players.p2.score.correct > players.p1.score.correct) {
+        winnerText = `🏆 ¡Victoria para ${players.p2.name}! 🏆`;
+      } else {
+        // Desempate por menos errores si empatan en aciertos
+        if (players.p1.score.wrong < players.p2.score.wrong) {
+          winnerText = `🏆 ¡Victoria para ${players.p1.name} (por menos errores)! 🏆`;
+        } else if (players.p2.score.wrong < players.p1.score.wrong) {
+          winnerText = `🏆 ¡Victoria para ${players.p2.name} (por menos errores)! 🏆`;
+        } else {
+          winnerText = "¡Empate técnico absoluto! 🤝";
+        }
+      }
+      document.getElementById("winner-announcement").innerText = winnerText;
+    }
+
+    // Resetear a pantalla inicial
+    function restartToSetup() {
+      changeScreen('screen-setup');
+    }
+  </script>
+</body>
+</html>
